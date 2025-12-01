@@ -133,7 +133,7 @@ export default function DataPanel({ sensors = [], loading = false, error = null 
                   justifyContent: "space-between",
                   marginBottom: 8
                 }}>
-                  <span style={{ color: "#B0B0B0" }}>Nearest Fire 🔥</span>
+                  <span style={{ color: "#B0B0B0" }}>Nearest Fire</span>
                   <span style={{ color: "#fff", fontWeight: "bold" }}>
                     {sensor.nearestFireDistance.toFixed(1)} km
                   </span>
