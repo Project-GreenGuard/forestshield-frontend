@@ -34,17 +34,27 @@ npm install
 
 ### Environment Configuration
 
-Create `.env` file in the root directory:
+Copy the environment template and configure:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` file with your configuration:
+
+**For local development:**
 
 ```env
 REACT_APP_API_URL=http://localhost:5001/api
 ```
 
-For production, use your API Gateway endpoint:
+**For production (after AWS deployment):**
 
 ```env
 REACT_APP_API_URL=https://your-api-gateway-url.amazonaws.com/api
 ```
+
+See `TEAM_SETUP_GUIDE.md` in the `/docs` folder for detailed setup instructions.
 
 ### Development
 
