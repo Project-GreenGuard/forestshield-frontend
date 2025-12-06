@@ -34,3 +34,9 @@ yarn-error.log*
 # OS
 Thumbs.db
 
+# Certificates (keep private!)
+*.pem
+*.key
+*.crt
+*.cert
+
