@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useState } from 'react';
@@ -33,7 +33,41 @@ const getRiskIcon = (riskScore) => {
   });
 };
 
-export default function MapArea({ sensors = [], riskMapData = [], loading = false }) {
+// Component to handle map resizing
+function MapResizer({ isExpanded }) {
+  const map = useMap();
+
+  useEffect(() => {
+    // Invalidate size after a short delay to allow transition to complete
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [map, isExpanded]);
+
+  return null;
+}
+
+export default function MapArea({ sensors = [], riskMapData = [], loading = false, isExpanded, onToggleExpand }) {
+  const containerStyle = isExpanded ? {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    zIndex: 1000,
+    background: "#1B2E1B",
+    padding: 0
+  } : {
+    gridArea: "map",
+    position: "relative",
+    margin: "20px",
+    borderRadius: "12px",
+    overflow: "hidden",
+    border: "1px solid #243B24"
+  };
+
   const [mapCenter, setMapCenter] = useState([43.467, -79.699]); // Default: Ontario, Canada
   const [mapZoom, setMapZoom] = useState(8);
 
@@ -68,30 +102,44 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
   }
 
   return (
-    <div style={{
-      gridArea: "map",
-      background: "#242424",
-      margin: 20,
-      borderRadius: 10,
-      overflow: "hidden"
-    }}>
+    <div style={containerStyle}>
+      <button
+        onClick={onToggleExpand}
+        style={{
+          position: "absolute",
+          top: 20,
+          right: 20,
+          zIndex: 10000,
+          background: "#FF7A00",
+          color: "white",
+          border: "none",
+          padding: "8px 16px",
+          borderRadius: "4px",
+          cursor: "pointer",
+          fontWeight: "bold",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.3)"
+        }}
+      >
+        {isExpanded ? "Collapse View" : "Expand Live View"}
+      </button>
       <MapContainer
         center={mapCenter}
         zoom={mapZoom}
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={true}
       >
+        <MapResizer isExpanded={isExpanded} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        
+
         {/* Sensor markers */}
         {sensors.map((sensor) => {
           if (!sensor.lat || !sensor.lng) return null;
-          
+
           const riskScore = sensor.riskScore || 0;
-          
+
           return (
             <Marker
               key={sensor.deviceId}
@@ -121,10 +169,10 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
         {/* Risk heatmap circles (optional - can be enhanced later) */}
         {riskMapData.slice(0, 50).map((point, index) => {
           if (!point.lat || !point.lng) return null;
-          
+
           const radius = Math.max(1000, (point.riskScore || 0) * 50); // Scale radius by risk
           const opacity = Math.min(0.3, (point.riskScore || 0) / 100);
-          
+
           return (
             <Circle
               key={`risk-${index}`}
@@ -139,7 +187,7 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
           );
         })}
       </MapContainer>
-      
+
       {/* Legend */}
       <div style={{
         position: "absolute",
