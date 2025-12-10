@@ -4,13 +4,14 @@ on:
   pull_request:
     branches: [main, develop]
   push:
-    branches: [main, develop]
+    branches: [main, develop, "test/**", "ci/**", "feature/**"]
+  workflow_dispatch:
 
 jobs:
   test:
     name: Test Frontend
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,7 +20,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: 'npm'
+          cache: "npm"
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
@@ -41,4 +42,3 @@ jobs:
             echo "❌ Build directory not found"
             exit 1
           fi
-
