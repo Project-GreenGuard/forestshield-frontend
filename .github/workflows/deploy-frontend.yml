@@ -21,6 +21,8 @@ jobs:
     name: Deploy Frontend
     runs-on: ubuntu-latest
     environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+    # Only deploy from main/develop branches, not feature branches
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout code
@@ -61,6 +63,7 @@ jobs:
         env:
           REACT_APP_API_URL: ${{ steps.infra.outputs.api_url }}
         run: npm run build
+        continue-on-error: false
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
