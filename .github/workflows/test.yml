@@ -1,0 +1,44 @@
+name: Test Frontend
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  test:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint frontend
+        run: npm run lint || echo "⚠️ Linting issues found (non-blocking)"
+
+      - name: Build frontend
+        env:
+          REACT_APP_API_URL: https://api.example.com/api
+        run: npm run build
+
+      - name: Check build output
+        run: |
+          if [ -d "build" ]; then
+            echo "✅ Frontend builds successfully"
+          else
+            echo "❌ Build directory not found"
+            exit 1
+          fi
+

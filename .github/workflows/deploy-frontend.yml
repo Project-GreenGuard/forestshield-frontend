@@ -1,0 +1,89 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  deploy:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Determine Environment
+        id: env
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ] || [ "${{ github.event.inputs.environment }}" == "production" ]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+          else
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get Infrastructure Outputs
+        id: infra
+        run: |
+          # Get from secrets
+          if [ "${{ steps.env.outputs.environment }}" == "production" ]; then
+            echo "api_url=${{ secrets.PRODUCTION_API_URL }}" >> $GITHUB_OUTPUT
+            echo "s3_bucket=${{ secrets.PRODUCTION_S3_BUCKET }}" >> $GITHUB_OUTPUT
+          else
+            echo "api_url=${{ secrets.STAGING_API_URL }}" >> $GITHUB_OUTPUT
+            echo "s3_bucket=${{ secrets.STAGING_S3_BUCKET }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build frontend
+        env:
+          REACT_APP_API_URL: ${{ steps.infra.outputs.api_url }}
+        run: npm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to S3
+        run: |
+          echo "📤 Uploading frontend files to S3..."
+          aws s3 sync build/ \
+            "s3://${{ steps.infra.outputs.s3_bucket }}" \
+            --delete \
+            --cache-control "public, max-age=3600"
+
+      - name: Deployment Note
+        run: |
+          echo "ℹ️ Using S3 static website hosting"
+          echo "Note: Changes may take a few seconds to appear due to browser caching"
+
+      - name: Deployment Summary
+        run: |
+          echo "✅ Frontend deployed to ${{ steps.env.outputs.environment }}!"
+          echo "S3 Bucket: ${{ steps.infra.outputs.s3_bucket }}"
+          echo "Frontend URL: http://${{ steps.infra.outputs.s3_bucket }}.s3-website-us-east-1.amazonaws.com"
