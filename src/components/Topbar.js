@@ -1,14 +1,14 @@
 export default function Topbar() {
   return (
     <div style={{
-      background: "#121212",
+      background: "#243B24",
       gridArea: "topbar",
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
       padding: "0 30px"
     }}>
-      <h2 style={{ margin: 0 }}>Real-Time Wildfire Dashboard</h2>
+      <h2 style={{ margin: 0 }}>Project Green Guard</h2>
       <div style={{
         width: 30,
         height: 30,

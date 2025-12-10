@@ -11,6 +11,7 @@ function App() {
   const [riskMapData, setRiskMapData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isMapExpanded, setIsMapExpanded] = useState(false);
 
   // Fetch sensor data every 10 seconds
   useEffect(() => {
@@ -60,7 +61,13 @@ function App() {
     <div className="dashboard">
       <Sidebar />
       <Topbar />
-      <MapArea sensors={sensors} riskMapData={riskMapData} loading={loading} />
+      <MapArea
+        sensors={sensors}
+        riskMapData={riskMapData}
+        loading={loading}
+        isExpanded={isMapExpanded}
+        onToggleExpand={() => setIsMapExpanded(!isMapExpanded)}
+      />
       <DataPanel sensors={sensors} loading={loading} error={error} />
     </div>
   );
