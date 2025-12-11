@@ -7,7 +7,7 @@ export default function Sidebar() {
     }}>
       <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
         <img
-          src="/GreenGuard.jpg"
+          src="/logo.png"
           alt="GreenGuard Logo"
           style={{
             width: 40,
