@@ -62,3 +62,10 @@ export const getRiskMapData = async () => {
   }
 };
 
+export const getNasaFires = async () => {
+  const res = await fetch(`${process.env.REACT_APP_API_URL}/api/nasa-fires`);
+  if (!res.ok) throw new Error("Failed to fetch NASA fires");
+  return res.json();
+};
+
+

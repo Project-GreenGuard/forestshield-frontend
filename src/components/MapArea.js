@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle, CircleMarker, useMap } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useState } from 'react';
@@ -70,6 +70,8 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
 
   const [mapCenter, setMapCenter] = useState([43.467, -79.699]); // Default: Ontario, Canada
   const [mapZoom, setMapZoom] = useState(8);
+  const [nasaFires, setNasaFires] = useState([]);
+  const [nasaCount, setNasaCount] = useState(0);
 
   // Calculate map center from sensor locations
   useEffect(() => {
@@ -83,6 +85,23 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
       }
     }
   }, [sensors]);
+
+    useEffect(() => {
+    const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:5001";
+
+    fetch(`${baseUrl}/api/nasa-fires`)
+      .then((res) => res.json())
+      .then((data) => {
+        setNasaFires(data?.fires || []);
+        setNasaCount(data?.count ?? (data?.fires?.length || 0));
+        console.log("NASA fires:", data);
+      })
+      .catch((err) => {
+        console.log("NASA fires fetch error:", err);
+        setNasaFires([]);
+        setNasaCount(0);
+      });
+  }, []);
 
   if (loading && sensors.length === 0) {
     return (
@@ -122,6 +141,7 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
       >
         {isExpanded ? "Collapse View" : "Expand Live View"}
       </button>
+      
       <MapContainer
         center={mapCenter}
         zoom={mapZoom}
@@ -186,6 +206,27 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
             />
           );
         })}
+        {/* 🔥 NASA FIRE MARKERS */}
+        {nasaFires.map((fire, index) => {
+          if (!fire.latitude || !fire.longitude) return null;
+
+          return (
+            <CircleMarker
+              key={`nasa-${index}`}
+              center={[fire.latitude, fire.longitude]}
+              radius={6}
+              pathOptions={{ color: "red", fillOpacity: 0.9 }}
+            >
+              <Popup>
+                <div style={{ color: "#000" }}>
+                  <strong>NASA Fire Detection</strong><br/>
+                  Confidence: {fire.confidence || "N/A"}<br/>
+                  FRP: {fire.frp || "N/A"}
+                </div>
+              </Popup>
+            </CircleMarker>
+          );
+        })}
       </MapContainer>
 
       {/* Legend */}
@@ -203,6 +244,7 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
         <div style={{ marginBottom: 5 }}><span style={{ color: "#B22222" }}>●</span> High Risk (61-100)</div>
         <div style={{ marginBottom: 5 }}><span style={{ color: "#FF7A00" }}>●</span> Medium Risk (31-60)</div>
         <div><span style={{ color: "#00C853" }}>●</span> Low Risk (0-30)</div>
+        <div style={{ marginTop: 8 }}><span style={{ color: "red" }}>●</span> NASA FIRMS Fires: {nasaCount}</div>
       </div>
     </div>
   );
