@@ -11,7 +11,7 @@ Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Custom marker icons based on risk score
+// Custom marker icons based on risk score (expects 0-100 scale)
 const getRiskIcon = (riskScore) => {
   let color = '#00C853'; // Green - Low risk (0-30)
   if (riskScore > 60) {
@@ -138,26 +138,95 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
         {sensors.map((sensor) => {
           if (!sensor.lat || !sensor.lng) return null;
 
-          const riskScore = sensor.riskScore || 0;
+          // PRIORITIZE ML PREDICTION (riskScore) over stored data (fire_risk)
+          // ML model returns 0-1 scale
+          const mlRiskScore = sensor.riskScore || 0;
+          const storedRisk = sensor.fire_risk || 0;
+          
+          // Use ML prediction if available (non-zero), otherwise fall back to stored
+          const rawRiskScore = mlRiskScore > 0 ? mlRiskScore : storedRisk;
+          
+          // Convert to 0-100 scale for display
+          const displayRiskScore = rawRiskScore * 100;
+          
+          // Use riskLevel from API if available, otherwise determine from score
+          const riskLevel = sensor.riskLevel || 
+            (displayRiskScore > 60 ? 'HIGH' : displayRiskScore > 30 ? 'MEDIUM' : 'LOW');
+
+          // Debug log to console (you can check this in browser DevTools)
+          console.log(`Sensor ${sensor.deviceId}:`, {
+            mlRiskScore,
+            storedRisk,
+            used: rawRiskScore,
+            display: displayRiskScore,
+            level: riskLevel
+          });
 
           return (
             <Marker
               key={sensor.deviceId}
               position={[sensor.lat, sensor.lng]}
-              icon={getRiskIcon(riskScore)}
+              icon={getRiskIcon(displayRiskScore)}
             >
               <Popup>
-                <div style={{ color: '#000', minWidth: '200px' }}>
-                  <h3 style={{ margin: '0 0 10px 0' }}>Sensor: {sensor.deviceId}</h3>
-                  <p><strong>Temperature:</strong> {sensor.temperature?.toFixed(1)}°C</p>
-                  <p><strong>Humidity:</strong> {sensor.humidity?.toFixed(1)}%</p>
-                  <p><strong>Risk Score:</strong> {riskScore.toFixed(1)}/100</p>
-                  {sensor.nearestFireDistance && sensor.nearestFireDistance > 0 && (
-                    <p><strong>Nearest Fire:</strong> {sensor.nearestFireDistance.toFixed(1)} km</p>
+                <div style={{ color: '#000', minWidth: '220px' }}>
+                  <h3 style={{ margin: '0 0 10px 0', color: '#333', borderBottom: '1px solid #eee', paddingBottom: '5px' }}>
+                    🔥 Sensor: {sensor.deviceId}
+                  </h3>
+                  
+                  {/* ML Prediction Section (highlighted) */}
+                  <div style={{
+                    background: '#f5f5f5',
+                    padding: '8px',
+                    borderRadius: '4px',
+                    marginBottom: '10px',
+                    border: '1px solid #ddd'
+                  }}>
+                    <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', color: '#333' }}>
+                      🤖 ML PREDICTION:
+                    </p>
+                    <p style={{ 
+                      margin: '5px 0',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      background: riskLevel === 'HIGH' ? '#ffebee' : riskLevel === 'MEDIUM' ? '#fff3e0' : '#e8f5e8',
+                      borderLeft: `4px solid ${riskLevel === 'HIGH' ? '#B22222' : riskLevel === 'MEDIUM' ? '#FF7A00' : '#00C853'}`
+                    }}>
+                      <strong>Risk Level:</strong> {riskLevel}<br/>
+                      <strong>Risk Score:</strong> {displayRiskScore.toFixed(1)}/100
+                    </p>
+                  </div>
+
+                  {/* Sensor Data Section */}
+                  <p style={{ margin: '5px 0' }}>
+                    <strong>📍 Location:</strong> {sensor.location || 'Unknown'}
+                  </p>
+                  <p style={{ margin: '5px 0' }}>
+                    <strong>🌡️ Temperature:</strong> {sensor.temperature?.toFixed(1)}°C
+                  </p>
+                  <p style={{ margin: '5px 0' }}>
+                    <strong>💧 Humidity:</strong> {sensor.humidity?.toFixed(1)}%
+                  </p>
+                  <p style={{ margin: '5px 0' }}>
+                    <strong>💨 Wind Speed:</strong> {sensor.wind_speed?.toFixed(1)} km/h
+                  </p>
+                  
+                  {/* Stored Risk Value (for debugging) */}
+                  {storedRisk > 0 && (
+                    <p style={{ margin: '5px 0', fontSize: '0.9em', color: '#666' }}>
+                      <strong>📊 Stored Risk:</strong> {(storedRisk * 100).toFixed(1)}/100
+                    </p>
                   )}
+                  
+                  {sensor.nearestFireDistance && sensor.nearestFireDistance > 0 && (
+                    <p style={{ margin: '5px 0' }}>
+                      <strong>🔥 Nearest Fire:</strong> {sensor.nearestFireDistance.toFixed(1)} km
+                    </p>
+                  )}
+                  
                   {sensor.timestamp && (
-                    <p style={{ fontSize: '0.8em', color: '#666', marginTop: '10px' }}>
-                      Last updated: {new Date(sensor.timestamp).toLocaleString()}
+                    <p style={{ fontSize: '0.8em', color: '#666', marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '8px' }}>
+                      ⏱️ Last updated: {new Date(sensor.timestamp).toLocaleString()}
                     </p>
                   )}
                 </div>
@@ -166,12 +235,18 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
           );
         })}
 
-        {/* Risk heatmap circles (optional - can be enhanced later) */}
+        {/* Risk heatmap circles */}
         {riskMapData.slice(0, 50).map((point, index) => {
           if (!point.lat || !point.lng) return null;
 
-          const radius = Math.max(1000, (point.riskScore || 0) * 50); // Scale radius by risk
-          const opacity = Math.min(0.3, (point.riskScore || 0) / 100);
+          // Use ML prediction for circles too
+          const mlRiskScore = point.riskScore || 0;
+          const storedRisk = point.fire_risk || 0;
+          const rawRiskScore = mlRiskScore > 0 ? mlRiskScore : storedRisk;
+          const displayRiskScore = rawRiskScore * 100;
+          
+          const radius = Math.max(1000, displayRiskScore * 50);
+          const opacity = Math.min(0.3, displayRiskScore / 100);
 
           return (
             <Circle
@@ -179,7 +254,7 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
               center={[point.lat, point.lng]}
               radius={radius}
               pathOptions={{
-                fillColor: point.riskScore > 60 ? '#B22222' : point.riskScore > 30 ? '#FF7A00' : '#00C853',
+                fillColor: displayRiskScore > 60 ? '#B22222' : displayRiskScore > 30 ? '#FF7A00' : '#00C853',
                 fillOpacity: opacity,
                 color: 'transparent',
               }}
@@ -193,16 +268,37 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
         position: "absolute",
         bottom: 20,
         left: 20,
-        background: "rgba(0, 0, 0, 0.7)",
-        padding: "10px 15px",
-        borderRadius: 5,
+        background: "rgba(0, 0, 0, 0.85)",
+        padding: "15px 20px",
+        borderRadius: "8px",
         color: "#fff",
-        fontSize: 12,
-        zIndex: 1000
+        fontSize: 13,
+        zIndex: 1000,
+        backdropFilter: "blur(4px)",
+        border: "1px solid rgba(255,255,255,0.1)",
+        boxShadow: "0 4px 6px rgba(0,0,0,0.3)"
       }}>
-        <div style={{ marginBottom: 5 }}><span style={{ color: "#B22222" }}>●</span> High Risk (61-100)</div>
-        <div style={{ marginBottom: 5 }}><span style={{ color: "#FF7A00" }}>●</span> Medium Risk (31-60)</div>
-        <div><span style={{ color: "#00C853" }}>●</span> Low Risk (0-30)</div>
+        <div style={{ marginBottom: 10, fontWeight: 'bold', fontSize: 14, display: 'flex', alignItems: 'center' }}>
+          <span style={{ marginRight: 8 }}>🔥</span> Risk Legend
+          <span style={{ marginLeft: 10, fontSize: 11, background: '#333', padding: '2px 6px', borderRadius: 4 }}>
+            ML-Powered
+          </span>
+        </div>
+        <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center' }}>
+          <span style={{ color: "#B22222", fontSize: 18, marginRight: 8 }}>●</span> 
+          <span>High Risk (61-100)</span>
+        </div>
+        <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center' }}>
+          <span style={{ color: "#FF7A00", fontSize: 18, marginRight: 8 }}>●</span> 
+          <span>Medium Risk (31-60)</span>
+        </div>
+        <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center' }}>
+          <span style={{ color: "#00C853", fontSize: 18, marginRight: 8 }}>●</span> 
+          <span>Low Risk (0-30)</span>
+        </div>
+        <div style={{ marginTop: 10, fontSize: 11, color: '#aaa', borderTop: '1px solid #444', paddingTop: 8 }}>
+          Based on real-time ML predictions
+        </div>
       </div>
     </div>
   );

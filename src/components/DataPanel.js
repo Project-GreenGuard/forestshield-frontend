@@ -105,10 +105,13 @@ export default function DataPanel({
   loading = false,
   error = null,
 }) {
+  // Updated getRiskLevel function to handle 0-1 scale from ML model
   const getRiskLevel = (riskScore) => {
-    if (!riskScore) return { level: "Unknown", color: "#888" };
-    if (riskScore > 60) return { level: "High", color: "#B22222" };
-    if (riskScore > 30) return { level: "Medium", color: "#FF7A00" };
+    if (!riskScore && riskScore !== 0) return { level: "Unknown", color: "#888" };
+    // Convert from 0-1 scale to 0-100 scale for risk level determination
+    const score = riskScore * 100;
+    if (score > 60) return { level: "High", color: "#B22222" };
+    if (score > 30) return { level: "Medium", color: "#FF7A00" };
     return { level: "Low", color: "#00C853" };
   };
 
@@ -121,7 +124,7 @@ export default function DataPanel({
           padding: 20,
         }}
       >
-        <h3>Live Data</h3>
+        <h3 style={{ color: "#fff", marginBottom: 20 }}>Live Data</h3>
         <div style={{ color: "#888", marginTop: 20 }}>
           Loading sensor data...
         </div>
@@ -138,7 +141,7 @@ export default function DataPanel({
           padding: 20,
         }}
       >
-        <h3>Live Data</h3>
+        <h3 style={{ color: "#fff", marginBottom: 20 }}>Live Data</h3>
         <div style={{ color: "#B22222", marginTop: 20 }}>Error: {error}</div>
       </div>
     );
@@ -153,7 +156,7 @@ export default function DataPanel({
           padding: 20,
         }}
       >
-        <h3>Live Data</h3>
+        <h3 style={{ color: "#fff", marginBottom: 20 }}>Live Data</h3>
         <div style={{ color: "#888", marginTop: 20 }}>No sensors available</div>
       </div>
     );
@@ -182,6 +185,8 @@ export default function DataPanel({
 
       {sensors.map((sensor) => {
         const riskInfo = getRiskLevel(sensor.riskScore);
+        // Calculate display score (0-100 scale)
+        const displayRiskScore = sensor.riskScore ? (sensor.riskScore * 100).toFixed(1) : "N/A";
 
         return (
           <div
@@ -215,7 +220,7 @@ export default function DataPanel({
                   letterSpacing: "0.2px",
                 }}
               >
-                {sensor.deviceId}
+                {sensor.deviceId} {sensor.location && `- ${sensor.location}`}
               </h4>
               <span
                 style={{
@@ -343,7 +348,7 @@ export default function DataPanel({
                 </span>
               </div>
 
-              {/* Risk Score */}
+              {/* Risk Score - FIXED: Now multiplies by 100 */}
               <div
                 style={{
                   padding: "14px 16px",
@@ -398,7 +403,7 @@ export default function DataPanel({
                       fontWeight: "500",
                     }}
                   >
-                    Risk Score
+                    ML Risk Score
                   </span>
                 </div>
                 <span
@@ -410,7 +415,7 @@ export default function DataPanel({
                     display: "block",
                   }}
                 >
-                  {sensor.riskScore?.toFixed(1) || "N/A"}/100
+                  {displayRiskScore}/100
                 </span>
               </div>
 
@@ -465,6 +470,61 @@ export default function DataPanel({
                     }}
                   >
                     {sensor.nearestFireDistance.toFixed(1)} km
+                  </span>
+                </div>
+              )}
+
+              {/* Wind Speed - Adding if available */}
+              {sensor.wind_speed && (
+                <div
+                  style={{
+                    padding: "14px 16px",
+                    background: "rgba(255,122,0,0.08)",
+                    borderRadius: "10px",
+                    border: "1px solid rgba(255,122,0,0.15)",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "14px",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "36px",
+                        height: "36px",
+                        background: "rgba(255,122,0,0.15)",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      <span style={{ color: "#FF7A00", fontSize: "20px" }}>💨</span>
+                    </div>
+                    <span
+                      style={{
+                        color: "#E0E0E0",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                      }}
+                    >
+                      Wind Speed
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      color: "#fff",
+                      fontWeight: "600",
+                      fontSize: "18px",
+                      marginLeft: "50px",
+                      display: "block",
+                    }}
+                  >
+                    {sensor.wind_speed.toFixed(1)} km/h
                   </span>
                 </div>
               )}
