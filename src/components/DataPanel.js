@@ -414,6 +414,61 @@ export default function DataPanel({
                 </span>
               </div>
 
+              {/* Spread Rate */}
+              {sensor.spreadRateKmh != null && (
+                <div
+                  style={{
+                    padding: "14px 16px",
+                    background: "rgba(255,165,0,0.08)",
+                    borderRadius: "10px",
+                    border: "1px solid rgba(255,165,0,0.15)",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "14px",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "36px",
+                        height: "36px",
+                        background: "rgba(255,165,0,0.15)",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      <FireIcon size={20} color="#FFA500" />
+                    </div>
+                    <span
+                      style={{
+                        color: "#E0E0E0",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                      }}
+                    >
+                      Est. Spread Rate
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      color: "#FFA500",
+                      fontWeight: "600",
+                      fontSize: "18px",
+                      marginLeft: "50px",
+                      display: "block",
+                    }}
+                  >
+                    {sensor.spreadRateKmh?.toFixed(1) || "N/A"} km/h
+                  </span>
+                </div>
+              )}
+
               {/* Nearest Fire */}
               {sensor.nearestFireDistance && sensor.nearestFireDistance > 0 && (
                 <div
