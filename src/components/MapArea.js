@@ -49,6 +49,17 @@ function MapResizer({ isExpanded }) {
   return null;
 }
 
+const MAP_TYPES = {
+  road: {
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  },
+  terrain: {
+    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+    attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+  }
+};
+
 export default function MapArea({ sensors = [], riskMapData = [], loading = false, isExpanded, onToggleExpand }) {
   const containerStyle = isExpanded ? {
     position: "fixed",
@@ -70,6 +81,7 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
 
   const [mapCenter, setMapCenter] = useState([43.467, -79.699]); // Default: Ontario, Canada
   const [mapZoom, setMapZoom] = useState(8);
+  const [mapType, setMapType] = useState('road');
 
   // Calculate map center from sensor locations
   useEffect(() => {
@@ -103,25 +115,47 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
 
   return (
     <div style={containerStyle}>
-      <button
-        onClick={onToggleExpand}
-        style={{
-          position: "absolute",
-          top: 20,
-          right: 20,
-          zIndex: 10000,
-          background: "#FF7A00",
-          color: "white",
-          border: "none",
-          padding: "8px 16px",
-          borderRadius: "4px",
-          cursor: "pointer",
-          fontWeight: "bold",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.3)"
-        }}
-      >
-        {isExpanded ? "Collapse View" : "Expand Live View"}
-      </button>
+      <div style={{
+        position: "absolute",
+        top: 20,
+        right: 20,
+        zIndex: 10000,
+        display: "flex",
+        gap: "10px"
+      }}>
+        <select
+          value={mapType}
+          onChange={(e) => setMapType(e.target.value)}
+          style={{
+            background: "#fff",
+            color: "#333",
+            border: "none",
+            padding: "8px 12px",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontWeight: "bold",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.3)"
+          }}
+        >
+          <option value="road">Road View</option>
+          <option value="terrain">Terrain View</option>
+        </select>
+        <button
+          onClick={onToggleExpand}
+          style={{
+            background: "#FF7A00",
+            color: "white",
+            border: "none",
+            padding: "8px 16px",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontWeight: "bold",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.3)"
+          }}
+        >
+          {isExpanded ? "Collapse View" : "Expand Live View"}
+        </button>
+      </div>
       <MapContainer
         center={mapCenter}
         zoom={mapZoom}
@@ -130,8 +164,9 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
       >
         <MapResizer isExpanded={isExpanded} />
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          key={mapType}
+          attribution={MAP_TYPES[mapType].attribution}
+          url={MAP_TYPES[mapType].url}
         />
 
         {/* Sensor markers */}
