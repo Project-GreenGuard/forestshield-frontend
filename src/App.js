@@ -3,6 +3,9 @@ import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
 import MapArea from "./components/MapArea";
 import DataPanel from "./components/DataPanel";
+import AlertsPage from "./components/AlertsPage";
+import ReportsPage from "./components/ReportsPage";
+import EvacuationPage from "./components/EvacuationPage";
 import { getSensors, getRiskMapData } from "./services/api";
 import "./App.css";
 
@@ -12,6 +15,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
+  const [activePage, setActivePage] = useState("predictions");
 
   // Fetch sensor data every 10 seconds
   useEffect(() => {
@@ -57,18 +61,48 @@ function App() {
     return () => clearInterval(riskMapInterval);
   }, []);
 
+  const renderPage = () => {
+    if (activePage === "alerts") {
+      return (
+        <div style={{ gridColumn: "2 / 4", gridRow: "2", overflowY: "auto" }}>
+          <AlertsPage sensors={sensors} loading={loading} />
+        </div>
+      );
+    }
+    if (activePage === "reports") {
+      return (
+        <div style={{ gridColumn: "2 / 4", gridRow: "2", overflowY: "auto" }}>
+          <ReportsPage sensors={sensors} loading={loading} />
+        </div>
+      );
+    }
+    if (activePage === "evacuation") {
+      return (
+        <div style={{ gridColumn: "2 / 4", gridRow: "2", overflowY: "auto" }}>
+          <EvacuationPage sensors={sensors} loading={loading} />
+        </div>
+      );
+    }
+    // Default: predictions (map + panel)
+    return (
+      <>
+        <MapArea
+          sensors={sensors}
+          riskMapData={riskMapData}
+          loading={loading}
+          isExpanded={isMapExpanded}
+          onToggleExpand={() => setIsMapExpanded(!isMapExpanded)}
+        />
+        <DataPanel sensors={sensors} loading={loading} error={error} />
+      </>
+    );
+  };
+
   return (
     <div className="dashboard">
-      <Sidebar />
+      <Sidebar activePage={activePage} onNavigate={setActivePage} />
       <Topbar />
-      <MapArea
-        sensors={sensors}
-        riskMapData={riskMapData}
-        loading={loading}
-        isExpanded={isMapExpanded}
-        onToggleExpand={() => setIsMapExpanded(!isMapExpanded)}
-      />
-      <DataPanel sensors={sensors} loading={loading} error={error} />
+      {renderPage()}
     </div>
   );
 }
