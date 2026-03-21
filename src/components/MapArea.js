@@ -33,18 +33,17 @@ const getRiskIcon = (riskScore) => {
   });
 };
 
-// Component to handle map resizing
-function MapResizer({ isExpanded }) {
+// Invalidate size on expand/collapse and when basemap changes
+function MapResizer({ isExpanded, mapType }) {
   const map = useMap();
 
   useEffect(() => {
-    // Invalidate size after a short delay to allow transition to complete
     const timer = setTimeout(() => {
       map.invalidateSize();
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [map, isExpanded]);
+  }, [map, isExpanded, mapType]);
 
   return null;
 }
@@ -52,12 +51,14 @@ function MapResizer({ isExpanded }) {
 const MAP_TYPES = {
   road: {
     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   },
   terrain: {
     url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-    attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
-  }
+    attribution:
+      'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+  },
 };
 
 export default function MapArea({ sensors = [], riskMapData = [], loading = false, isExpanded, onToggleExpand }) {
@@ -81,7 +82,7 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
 
   const [mapCenter, setMapCenter] = useState([43.467, -79.699]); // Default: Ontario, Canada
   const [mapZoom, setMapZoom] = useState(8);
-  const [mapType, setMapType] = useState('road');
+  const [mapType, setMapType] = useState("road");
 
   // Calculate map center from sensor locations
   useEffect(() => {
@@ -115,17 +116,25 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
 
   return (
     <div style={containerStyle}>
-      <div style={{
-        position: "absolute",
-        top: 20,
-        right: 20,
-        zIndex: 10000,
-        display: "flex",
-        gap: "10px"
-      }}>
+      <div
+        style={{
+          position: "absolute",
+          top: 20,
+          right: 20,
+          zIndex: 10000,
+          display: "flex",
+          gap: "10px",
+          alignItems: "center",
+        }}
+      >
+        <label htmlFor="map-basemap" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>
+          Map style
+        </label>
         <select
+          id="map-basemap"
           value={mapType}
           onChange={(e) => setMapType(e.target.value)}
+          aria-label="Map basemap"
           style={{
             background: "#fff",
             color: "#333",
@@ -134,13 +143,14 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
             borderRadius: "4px",
             cursor: "pointer",
             fontWeight: "bold",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.3)"
+            boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
           }}
         >
-          <option value="road">Road View</option>
-          <option value="terrain">Terrain View</option>
+          <option value="road">Road</option>
+          <option value="terrain">Terrain</option>
         </select>
         <button
+          type="button"
           onClick={onToggleExpand}
           style={{
             background: "#FF7A00",
@@ -162,7 +172,7 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={true}
       >
-        <MapResizer isExpanded={isExpanded} />
+        <MapResizer isExpanded={isExpanded} mapType={mapType} />
         <TileLayer
           key={mapType}
           attribution={MAP_TYPES[mapType].attribution}
@@ -187,6 +197,9 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
                   <p><strong>Temperature:</strong> {sensor.temperature?.toFixed(1)}°C</p>
                   <p><strong>Humidity:</strong> {sensor.humidity?.toFixed(1)}%</p>
                   <p><strong>Risk Score:</strong> {riskScore.toFixed(1)}/100</p>
+                  {sensor.spreadRateKmh != null && (
+                    <p><strong>Est. Spread Rate:</strong> {sensor.spreadRateKmh.toFixed(1)} km/h</p>
+                  )}
                   {sensor.nearestFireDistance && sensor.nearestFireDistance > 0 && (
                     <p><strong>Nearest Fire:</strong> {sensor.nearestFireDistance.toFixed(1)} km</p>
                   )}
