@@ -1,7 +1,4 @@
 export default function DataPanel({ sensors = [], loading = false, error = null }) {
-  // Get the first sensor or create a default display
-  const primarySensor = sensors.length > 0 ? sensors[0] : null;
-
   const getRiskLevel = (riskScore) => {
     if (!riskScore) return { level: 'Unknown', color: '#888' };
     if (riskScore > 60) return { level: 'High', color: '#B22222' };
