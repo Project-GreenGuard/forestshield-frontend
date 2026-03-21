@@ -20,7 +20,25 @@ export default function EvacuationPage({ sensors = [], loading = false }) {
           alignItems: "flex-start",
           gap: "16px",
         }}>
-          <span style={{ fontSize: "28px" }}>🚨</span>
+          <span
+            style={{
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minWidth: "40px",
+              height: "40px",
+              background: "rgba(178,34,34,0.35)",
+              color: "#fff",
+              borderRadius: "8px",
+              fontSize: "11px",
+              fontWeight: "800",
+              letterSpacing: "0.06em",
+            }}
+            aria-hidden
+          >
+            ALERT
+          </span>
           <div>
             <div style={{ color: "#B22222", fontWeight: "700", fontSize: "16px", marginBottom: "6px" }}>
               HIGH RISK DETECTED — {highRisk.length} sensor{highRisk.length > 1 ? "s" : ""}

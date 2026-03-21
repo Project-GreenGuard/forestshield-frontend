@@ -28,7 +28,7 @@ export default function AlertsPage({ sensors = [], loading = false }) {
           color: "#00C853",
           fontSize: "15px",
         }}>
-          ✓ No active alerts — all sensors reporting LOW risk.
+          No active alerts — all sensors reporting LOW risk.
         </div>
       )}
 
