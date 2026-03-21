@@ -152,6 +152,9 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
                   <p><strong>Temperature:</strong> {sensor.temperature?.toFixed(1)}°C</p>
                   <p><strong>Humidity:</strong> {sensor.humidity?.toFixed(1)}%</p>
                   <p><strong>Risk Score:</strong> {riskScore.toFixed(1)}/100</p>
+                  {sensor.spreadRateKmh != null && (
+                    <p><strong>Est. Spread Rate:</strong> {sensor.spreadRateKmh.toFixed(1)} km/h</p>
+                  )}
                   {sensor.nearestFireDistance && sensor.nearestFireDistance > 0 && (
                     <p><strong>Nearest Fire:</strong> {sensor.nearestFireDistance.toFixed(1)} km</p>
                   )}
