@@ -1,3 +1,31 @@
+function csvEscape(value) {
+  if (value === null || value === undefined) return "";
+  const s = String(value);
+  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
+function sensorsToCsv(rows) {
+  const headers = [
+    "deviceId",
+    "riskLevel",
+    "riskScore",
+    "spreadRateKmh",
+    "temperature",
+    "humidity",
+    "lat",
+    "lng",
+    "timestamp",
+  ];
+  const lines = [headers.join(",")];
+  for (const s of rows) {
+    lines.push(
+      headers.map((h) => csvEscape(s[h])).join(",")
+    );
+  }
+  return lines.join("\r\n");
+}
+
 export default function ReportsPage({ sensors = [], loading = false }) {
   if (loading && sensors.length === 0) {
     return (
@@ -37,13 +65,45 @@ export default function ReportsPage({ sensors = [], loading = false }) {
     </div>
   );
 
+  const downloadCsv = () => {
+    const csv = sensorsToCsv(sensors);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `forestshield-sensors-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div style={{ padding: "32px", background: "#181818", minHeight: "100%" }}>
-      <h2 style={{ color: "#fff", marginBottom: 8, fontSize: "22px" }}>Reports</h2>
-      <p style={{ color: "#888", marginBottom: 28, fontSize: "13px" }}>
-        Aggregated summary across all active sensors.
-      </p>
-
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", flexWrap: "wrap", marginBottom: 28 }}>
+        <div>
+          <h2 style={{ color: "#fff", marginBottom: 8, fontSize: "22px" }}>Reports</h2>
+          <p style={{ color: "#888", marginBottom: 0, fontSize: "13px" }}>
+            Aggregated summary across all active sensors.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={downloadCsv}
+          disabled={!sensors.length}
+          style={{
+            background: sensors.length ? "#2E7D32" : "#333",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            padding: "10px 18px",
+            fontSize: "13px",
+            fontWeight: 600,
+            cursor: sensors.length ? "pointer" : "not-allowed",
+            opacity: sensors.length ? 1 : 0.5,
+          }}
+        >
+          Export CSV
+        </button>
+      </div>
       {/* Summary stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "28px" }}>
         {statCard("Total Sensors",       total,         "#fff")}
