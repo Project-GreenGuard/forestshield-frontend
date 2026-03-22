@@ -62,3 +62,25 @@ export const getRiskMapData = async () => {
   }
 };
 
+/**
+ * NASA FIRMS hotspots (VIIRS) via backend — requires NASA_MAP_KEY on API Lambda.
+ * @returns {{ source: string, count: number, fires: Array<{latitude:number,longitude:number,...}> }}
+ */
+export const getNasaFires = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/nasa-fires`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return {
+      source: data.source || 'NASA FIRMS',
+      count: typeof data.count === 'number' ? data.count : (data.fires || []).length,
+      fires: Array.isArray(data.fires) ? data.fires : [],
+    };
+  } catch (error) {
+    console.error('Error fetching NASA FIRMS data:', error);
+    return { source: 'NASA FIRMS', count: 0, fires: [] };
+  }
+};
+

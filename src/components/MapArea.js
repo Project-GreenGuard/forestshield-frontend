@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle, CircleMarker, useMap } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useState } from 'react';
@@ -61,7 +61,9 @@ const MAP_TYPES = {
   },
 };
 
-export default function MapArea({ sensors = [], riskMapData = [], loading = false, isExpanded, onToggleExpand }) {
+const NASA_MAX_MARKERS = 400;
+
+export default function MapArea({ sensors = [], riskMapData = [], nasaFires = [], loading = false, isExpanded, onToggleExpand }) {
   const containerStyle = isExpanded ? {
     position: "fixed",
     top: 0,
@@ -83,6 +85,7 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
   const [mapCenter, setMapCenter] = useState([43.467, -79.699]); // Default: Ontario, Canada
   const [mapZoom, setMapZoom] = useState(8);
   const [mapType, setMapType] = useState("road");
+  const [showNasaFirms, setShowNasaFirms] = useState(true);
 
   // Calculate map center from sensor locations
   useEffect(() => {
@@ -149,6 +152,30 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
           <option value="road">Road</option>
           <option value="terrain">Terrain</option>
         </select>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            background: "rgba(255,255,255,0.95)",
+            color: "#333",
+            padding: "8px 12px",
+            borderRadius: 4,
+            fontSize: 13,
+            fontWeight: 600,
+            boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+            cursor: "pointer",
+            userSelect: "none",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={showNasaFirms}
+            onChange={(e) => setShowNasaFirms(e.target.checked)}
+            aria-label="Show NASA FIRMS hotspots"
+          />
+          NASA FIRMS
+        </label>
         <button
           type="button"
           onClick={onToggleExpand}
@@ -214,6 +241,47 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
           );
         })}
 
+        {/* NASA VIIRS hotspots (near real-time thermal anomalies — not ground-truthed fire perimeters) */}
+        {showNasaFirms &&
+          nasaFires.slice(0, NASA_MAX_MARKERS).map((fire, index) => {
+            const lat = Number(fire.latitude);
+            const lng = Number(fire.longitude);
+            if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+            const frp = fire.frp != null ? Number(fire.frp) : 0;
+            const r = Math.min(14, Math.max(4, 4 + Math.log1p(frp)));
+            return (
+              <CircleMarker
+                key={`nasa-${index}-${lat}-${lng}`}
+                center={[lat, lng]}
+                radius={r}
+                pathOptions={{
+                  color: "#8B0000",
+                  weight: 1,
+                  fillColor: "#FF4500",
+                  fillOpacity: 0.75,
+                }}
+              >
+                <Popup>
+                  <div style={{ color: "#111", minWidth: 160 }}>
+                    <strong>NASA FIRMS</strong>
+                    <p style={{ margin: "6px 0 0", fontSize: 12 }}>
+                      {fire.acq_date} {fire.acq_time ? `· ${fire.acq_time}` : ""}
+                    </p>
+                    {fire.confidence && (
+                      <p style={{ margin: "4px 0 0", fontSize: 12 }}>Confidence: {fire.confidence}</p>
+                    )}
+                    {Number.isFinite(frp) && frp > 0 && (
+                      <p style={{ margin: "4px 0 0", fontSize: 12 }}>FRP: {frp.toFixed(1)} MW</p>
+                    )}
+                    <p style={{ margin: "8px 0 0", fontSize: 10, color: "#555" }}>
+                      Thermal anomaly — not a legal fire boundary.
+                    </p>
+                  </div>
+                </Popup>
+              </CircleMarker>
+            );
+          })}
+
         {/* Risk heatmap circles (optional - can be enhanced later) */}
         {riskMapData.slice(0, 50).map((point, index) => {
           if (!point.lat || !point.lng) return null;
@@ -250,7 +318,8 @@ export default function MapArea({ sensors = [], riskMapData = [], loading = fals
       }}>
         <div style={{ marginBottom: 5 }}><span style={{ color: "#B22222" }}>●</span> High Risk (61-100)</div>
         <div style={{ marginBottom: 5 }}><span style={{ color: "#FF7A00" }}>●</span> Medium Risk (31-60)</div>
-        <div><span style={{ color: "#00C853" }}>●</span> Low Risk (0-30)</div>
+        <div style={{ marginBottom: 5 }}><span style={{ color: "#00C853" }}>●</span> Low Risk (0-30)</div>
+        <div><span style={{ color: "#FF4500" }}>●</span> NASA FIRMS hotspot</div>
       </div>
     </div>
   );

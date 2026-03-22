@@ -6,7 +6,7 @@ import DataPanel from "./components/DataPanel";
 import AlertsPage from "./components/AlertsPage";
 import ReportsPage from "./components/ReportsPage";
 import EvacuationPage from "./components/EvacuationPage";
-import { getSensors, getRiskMapData } from "./services/api";
+import { getSensors, getRiskMapData, getNasaFires } from "./services/api";
 import "./App.css";
 
 function App() {
@@ -61,6 +61,17 @@ function App() {
     return () => clearInterval(riskMapInterval);
   }, []);
 
+  // NASA FIRMS hotspots — refresh less often than sensors (FIRMS is near-real-time, not per-second)
+  useEffect(() => {
+    const loadFirms = async () => {
+      const { fires } = await getNasaFires();
+      setNasaFires(fires);
+    };
+    loadFirms();
+    const firmsInterval = setInterval(loadFirms, 180000); // 3 minutes
+    return () => clearInterval(firmsInterval);
+  }, []);
+
   const renderPage = () => {
     if (activePage === "alerts") {
       return (
@@ -89,6 +100,7 @@ function App() {
         <MapArea
           sensors={sensors}
           riskMapData={riskMapData}
+          nasaFires={nasaFires}
           loading={loading}
           isExpanded={isMapExpanded}
           onToggleExpand={() => setIsMapExpanded(!isMapExpanded)}
