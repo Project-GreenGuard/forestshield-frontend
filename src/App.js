@@ -12,6 +12,7 @@ import "./App.css";
 function App() {
   const [sensors, setSensors] = useState([]);
   const [riskMapData, setRiskMapData] = useState([]);
+  const [nasaFires, setNasaFires] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
