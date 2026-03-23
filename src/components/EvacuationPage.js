@@ -62,11 +62,12 @@ export default function EvacuationPage({ sensors = [], loading = false }) {
             const isHigh = sensor.riskLevel === "HIGH";
             const isMed  = sensor.riskLevel === "MEDIUM";
             const borderColor = isHigh ? "#B22222" : isMed ? "#FF7A00" : "#00C853";
-            const action = isHigh
+            const defaultAction = isHigh
               ? "Evacuate immediately. Move perpendicular to estimated fire spread direction."
               : isMed
               ? "Prepare to evacuate. Monitor conditions and keep evacuation kit ready."
               : "No evacuation needed. Continue monitoring.";
+            const action = sensor.recommendedAction || defaultAction;
 
             return (
               <div key={sensor.deviceId} style={{

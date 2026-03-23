@@ -469,6 +469,37 @@ export default function DataPanel({
                 </div>
               )}
 
+              {sensor.recommendedAction && (
+                <div style={{
+                  padding: "14px 16px",
+                  background: "rgba(255,122,0,0.08)",
+                  borderRadius: "10px",
+                  border: "1px solid rgba(255,122,0,0.15)"
+                }}>
+                  <div style={{ color: "#FF7A00", fontSize: "12px", marginBottom: "6px" }}>
+                    Recommended Action
+                  </div>
+                  <div style={{ color: "#fff", fontSize: "14px" }}>
+                    {sensor.recommendedAction}
+                  </div>
+                </div>
+              )}
+
+              {sensor.explanation && (
+                <div style={{
+                  padding: "12px 16px",
+                  background: "rgba(255,255,255,0.05)",
+                  borderRadius: "10px"
+                }}>
+                  <div style={{ color: "#888", fontSize: "12px", marginBottom: "6px" }}>
+                    AI Explanation
+                  </div>
+                  <div style={{ color: "#ccc", fontSize: "13px" }}>
+                    {sensor.explanation}
+                  </div>
+                </div>
+              )}
+
               {/* Nearest Fire */}
               {sensor.nearestFireDistance && sensor.nearestFireDistance > 0 && (
                 <div

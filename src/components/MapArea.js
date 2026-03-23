@@ -227,6 +227,16 @@ export default function MapArea({ sensors = [], riskMapData = [], nasaFires = []
                   {sensor.spreadRateKmh != null && (
                     <p><strong>Est. Spread Rate:</strong> {sensor.spreadRateKmh.toFixed(1)} km/h</p>
                   )}
+                  {sensor.recommendedAction && (
+                    <div style={{ marginTop: "8px", color: "#b22222", fontWeight: "600" }}>
+                      Action: {sensor.recommendedAction}
+                    </div>
+                  )}
+                  {sensor.explanation && (
+                    <div style={{ fontSize: "12px", color: "#444", marginTop: "4px" }}>
+                      {sensor.explanation}
+                    </div>
+                  )}
                   {sensor.nearestFireDistance && sensor.nearestFireDistance > 0 && (
                     <p><strong>Nearest Fire:</strong> {sensor.nearestFireDistance.toFixed(1)} km</p>
                   )}

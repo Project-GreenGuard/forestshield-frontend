@@ -56,6 +56,8 @@ export default function AlertsPage({ sensors = [], loading = false }) {
                   {sensor.riskLevel}
                 </span>
               </div>
+
+              {/* DATA GRID */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
                 {[
                   { label: "Risk Score",   value: `${sensor.riskScore?.toFixed(1) ?? "N/A"}/100`,  color: c.text },
@@ -69,6 +71,58 @@ export default function AlertsPage({ sensors = [], loading = false }) {
                   </div>
                 ))}
               </div>
+
+              {/*AI INSIGHTS*/}
+
+              {sensor.riskFactors && (
+                <div style={{
+                  marginTop: "14px",
+                  background: "rgba(0,0,0,0.2)",
+                  borderRadius: "8px",
+                  padding: "12px"
+                }}>
+                  <div style={{ color: "#888", fontSize: "11px", marginBottom: "4px" }}>
+                    Risk Factors
+                  </div>
+                  <div style={{ color: "#ccc", fontSize: "13px" }}>
+                    {sensor.riskFactors.join(", ")}
+                  </div>
+                </div>
+              )}
+
+              {sensor.recommendedAction && (
+                <div style={{
+                  marginTop: "10px",
+                  background: "rgba(255,122,0,0.1)",
+                  borderRadius: "8px",
+                  padding: "12px"
+                }}>
+                  <div style={{ color: "#FF7A00", fontSize: "11px", marginBottom: "4px" }}>
+                    Recommended Action
+                  </div>
+                  <div style={{ color: "#fff", fontSize: "13px" }}>
+                    {sensor.recommendedAction}
+                  </div>
+                </div>
+              )}
+
+              {sensor.explanation && (
+                <div style={{
+                  marginTop: "10px",
+                  background: "rgba(255,255,255,0.05)",
+                  borderRadius: "8px",
+                  padding: "12px"
+                }}>
+                  <div style={{ color: "#888", fontSize: "11px", marginBottom: "4px" }}>
+                    AI Explanation
+                  </div>
+                  <div style={{ color: "#ccc", fontSize: "13px" }}>
+                    {sensor.explanation}
+                  </div>
+                </div>
+              )}
+
+              {/* TIMESTAMP */}
               {sensor.timestamp && (
                 <div style={{ color: "#666", fontSize: "11px", marginTop: "12px" }}>
                   Last updated: {new Date(sensor.timestamp).toLocaleString()}
@@ -79,6 +133,7 @@ export default function AlertsPage({ sensors = [], loading = false }) {
         })}
       </div>
 
+      {/* LOW RISK */}
       {sorted.filter(s => s.riskLevel === "LOW").length > 0 && (
         <>
           <h3 style={{ color: "#888", fontSize: "14px", marginTop: "28px", marginBottom: "12px", fontWeight: "500" }}>
