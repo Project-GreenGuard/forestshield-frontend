@@ -230,6 +230,32 @@ export default function MapArea({ sensors = [], riskMapData = [], nasaFires = []
                   {sensor.nearestFireDistance && sensor.nearestFireDistance > 0 && (
                     <p><strong>Nearest Fire:</strong> {sensor.nearestFireDistance.toFixed(1)} km</p>
                   )}
+                  {sensor.explanation && (
+                    <p style={{ background: '#f0f0ff', padding: '6px 8px', borderRadius: '4px', fontSize: '0.85em', marginTop: '8px', lineHeight: '1.4' }}>
+                      <strong>AI Insight:</strong> {sensor.explanation}
+                    </p>
+                  )}
+                  {sensor.recommendedAction && (
+                    <p style={{ background: '#f0f8ff', padding: '6px 8px', borderRadius: '4px', fontSize: '0.85em', marginTop: '4px', lineHeight: '1.4' }}>
+                      <strong>Action:</strong> {sensor.recommendedAction}
+                    </p>
+                  )}
+                  {sensor.riskFactors && sensor.riskFactors.length > 0 && (
+                    <div style={{ marginTop: '6px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                      {sensor.riskFactors.map((factor, i) => (
+                        <span key={i} style={{
+                          background: '#fff3e0',
+                          color: '#e65100',
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          fontSize: '0.75em',
+                          fontWeight: '500',
+                        }}>
+                          {factor}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   {sensor.timestamp && (
                     <p style={{ fontSize: '0.8em', color: '#666', marginTop: '10px' }}>
                       Last updated: {new Date(sensor.timestamp).toLocaleString()}

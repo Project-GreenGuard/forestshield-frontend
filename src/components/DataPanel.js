@@ -524,6 +524,139 @@ export default function DataPanel({
                 </div>
               )}
 
+              {/* AI Recommendation */}
+              {sensor.recommendedAction && (
+                <div
+                  style={{
+                    padding: "14px 16px",
+                    background: "rgba(100,180,255,0.08)",
+                    borderRadius: "10px",
+                    border: "1px solid rgba(100,180,255,0.15)",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        color: "#64B4FF",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                      }}
+                    >
+                      AI Recommendation
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      color: "#E0E0E0",
+                      fontSize: "13px",
+                      lineHeight: "1.5",
+                      display: "block",
+                      marginLeft: "4px",
+                    }}
+                  >
+                    {sensor.recommendedAction}
+                  </span>
+                </div>
+              )}
+
+              {/* Risk Factors */}
+              {sensor.riskFactors && sensor.riskFactors.length > 0 && (
+                <div
+                  style={{
+                    padding: "14px 16px",
+                    background: "rgba(255,165,0,0.06)",
+                    borderRadius: "10px",
+                    border: "1px solid rgba(255,165,0,0.12)",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <span style={{ fontSize: "16px" }}>⚠️</span>
+                    <span
+                      style={{
+                        color: "#FFA500",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                      }}
+                    >
+                      Risk Factors
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginLeft: "4px" }}>
+                    {sensor.riskFactors.map((factor, i) => (
+                      <span
+                        key={i}
+                        style={{
+                          background: "rgba(255,165,0,0.15)",
+                          color: "#FFB74D",
+                          padding: "4px 10px",
+                          borderRadius: "6px",
+                          fontSize: "12px",
+                          fontWeight: "500",
+                        }}
+                      >
+                        {factor}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* AI Explanation */}
+              {sensor.explanation && (
+                <div
+                  style={{
+                    padding: "14px 16px",
+                    background: "rgba(156,136,255,0.06)",
+                    borderRadius: "10px",
+                    border: "1px solid rgba(156,136,255,0.12)",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        color: "#9C88FF",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                      }}
+                    >
+                      Explanation
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      color: "#C0B8E0",
+                      fontSize: "13px",
+                      lineHeight: "1.5",
+                      display: "block",
+                      marginLeft: "4px",
+                    }}
+                  >
+                    {sensor.explanation}
+                  </span>
+                </div>
+              )}
+
               {/* Timestamp */}
               {sensor.timestamp && (
                 <div

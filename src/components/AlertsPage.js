@@ -69,6 +69,36 @@ export default function AlertsPage({ sensors = [], loading = false }) {
                   </div>
                 ))}
               </div>
+              {/* AI Recommendation */}
+              {sensor.recommendedAction && (
+                <div style={{
+                  background: "rgba(100,180,255,0.08)",
+                  border: "1px solid rgba(100,180,255,0.15)",
+                  borderRadius: "8px",
+                  padding: "12px 14px",
+                  marginTop: "12px",
+                }}>
+                  <div style={{ color: "#64B4FF", fontSize: "11px", fontWeight: "600", marginBottom: "4px" }}>AI Recommendation</div>
+                  <div style={{ color: "#E0E0E0", fontSize: "13px", lineHeight: "1.5" }}>{sensor.recommendedAction}</div>
+                </div>
+              )}
+              {/* Risk Factors */}
+              {sensor.riskFactors && sensor.riskFactors.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "10px" }}>
+                  {sensor.riskFactors.map((factor, i) => (
+                    <span key={i} style={{
+                      background: "rgba(255,165,0,0.12)",
+                      color: "#FFB74D",
+                      padding: "3px 10px",
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                      fontWeight: "500",
+                    }}>
+                      {factor}
+                    </span>
+                  ))}
+                </div>
+              )}
               {sensor.timestamp && (
                 <div style={{ color: "#666", fontSize: "11px", marginTop: "12px" }}>
                   Last updated: {new Date(sensor.timestamp).toLocaleString()}
