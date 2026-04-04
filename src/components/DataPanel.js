@@ -524,6 +524,111 @@ export default function DataPanel({
                 </div>
               )}
 
+              {/* AI Explanation */}
+              {sensor.explanation && (
+                <div
+                  style={{
+                    padding: "14px 16px",
+                    background: "rgba(130,100,255,0.08)",
+                    borderRadius: "10px",
+                    border: "1px solid rgba(130,100,255,0.15)",
+                  }}
+                >
+                  <span
+                    style={{
+                      color: "#B8A9FF",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    AI Explanation
+                  </span>
+                  <p
+                    style={{
+                      color: "#E0E0E0",
+                      fontSize: "13px",
+                      margin: "8px 0 0 0",
+                      lineHeight: "1.5",
+                    }}
+                  >
+                    {sensor.explanation}
+                  </p>
+                </div>
+              )}
+
+              {/* Recommended Action */}
+              {sensor.recommendedAction && (
+                <div
+                  style={{
+                    padding: "14px 16px",
+                    background: "rgba(0,200,83,0.08)",
+                    borderRadius: "10px",
+                    border: "1px solid rgba(0,200,83,0.15)",
+                  }}
+                >
+                  <span
+                    style={{
+                      color: "#00C853",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    Recommended Action
+                  </span>
+                  <p
+                    style={{
+                      color: "#E0E0E0",
+                      fontSize: "13px",
+                      margin: "8px 0 0 0",
+                      lineHeight: "1.5",
+                    }}
+                  >
+                    {sensor.recommendedAction}
+                  </p>
+                </div>
+              )}
+
+              {/* Risk Factors */}
+              {sensor.riskFactors && sensor.riskFactors.length > 0 && (
+                <div
+                  style={{
+                    padding: "14px 16px",
+                    background: "rgba(255,122,0,0.08)",
+                    borderRadius: "10px",
+                    border: "1px solid rgba(255,122,0,0.15)",
+                  }}
+                >
+                  <span
+                    style={{
+                      color: "#FF7A00",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    Risk Factors
+                  </span>
+                  <ul
+                    style={{
+                      color: "#E0E0E0",
+                      fontSize: "13px",
+                      margin: "8px 0 0 0",
+                      paddingLeft: "18px",
+                      lineHeight: "1.6",
+                    }}
+                  >
+                    {sensor.riskFactors.map((factor, idx) => (
+                      <li key={idx}>{factor}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/* Timestamp */}
               {sensor.timestamp && (
                 <div
