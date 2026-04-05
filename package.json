@@ -17,6 +17,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "prebuild:ci": "node -e \"console.log('Starting CRA production build (webpack may be silent for several minutes)…')\"",
+    "build:ci": "CI=true DISABLE_ESLINT_PLUGIN=true GENERATE_SOURCEMAP=false NODE_OPTIONS=--max-old-space-size=6144 node ./node_modules/react-scripts/bin/react-scripts.js build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
