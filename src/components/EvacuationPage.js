@@ -62,7 +62,9 @@ export default function EvacuationPage({ sensors = [], loading = false }) {
             const isHigh = sensor.riskLevel === "HIGH";
             const isMed  = sensor.riskLevel === "MEDIUM";
             const borderColor = isHigh ? "#B22222" : isMed ? "#FF7A00" : "#00C853";
-            const action = isHigh
+            const action = sensor.recommendedAction
+              ? sensor.recommendedAction
+              : isHigh
               ? "Evacuate immediately. Move perpendicular to estimated fire spread direction."
               : isMed
               ? "Prepare to evacuate. Monitor conditions and keep evacuation kit ready."
@@ -100,14 +102,15 @@ export default function EvacuationPage({ sensors = [], loading = false }) {
                   </div>
                 </div>
                 <div style={{
-                  background: "rgba(0,0,0,0.2)",
+                  background: "rgba(100,180,255,0.08)",
                   borderRadius: "8px",
                   padding: "12px 16px",
                   color: "#E0E0E0",
                   fontSize: "13px",
                   lineHeight: "1.5",
+                  marginBottom: sensor.explanation ? "10px" : "0",
                 }}>
-                  <strong style={{ color: "#fff" }}>Recommended Action: </strong>{action}
+                  <strong style={{ color: "#64B4FF" }}>AI Recommended Action: </strong>{action}
                 </div>
               </div>
             );
